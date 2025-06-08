@@ -2,6 +2,7 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { DynamoDBStack } from '../lib/dynamodb-stack';
+import { S3Stack } from '../lib/s3-stack';
 
 const app = new cdk.App();
 
@@ -28,6 +29,12 @@ if (!envConfig) {
 
 // Create DynamoDB stack
 const dynamoStack = new DynamoDBStack(app, `Aipi561DynamoDB-${env}`, {
+  env: envConfig.env,
+  removalPolicy: env === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+});
+
+// Create S3 stack
+const s3Stack = new S3Stack(app, `Aipi561S3-${env}`, {
   env: envConfig.env,
   removalPolicy: env === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
 });
