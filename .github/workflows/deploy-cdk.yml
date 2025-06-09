@@ -3,7 +3,7 @@ name: Deploy CDK Stack
 on:
   push:
     branches:
-      - main
+      - 12-broken-deployment-due-to-missing-denojson-file
 
 jobs:
   deploy:

@@ -1,11 +1,10 @@
+.DS_Store
+
 # VSCode
 .vscode/
 
 # Deno
 .deno/
-deno.lock
-deno.json
-deno.jsonc
 
 # TypeScript / Node.js
 node_modules/

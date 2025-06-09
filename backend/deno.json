@@ -1,0 +1,17 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read --allow-run --watch src/server.ts",
+    "test": "deno test --allow-net --allow-env --allow-read --allow-run",
+    "start": "deno run --allow-net --allow-env --allow-read --allow-run src/server.ts"
+  },
+  "imports": {
+    "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
+    "dynamodb": "https://deno.land/x/dynamodb@v1.3.0/mod.ts",
+    "std/": "https://deno.land/std@0.208.0/"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  }
+} 
