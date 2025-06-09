@@ -1,4 +1,4 @@
-import { Context, Next } from "oak";
+import { Context, Next } from "https://deno.land/x/oak@v12.6.1/mod.ts";
 
 export async function errorHandler(ctx: Context, next: Next) {
   try {

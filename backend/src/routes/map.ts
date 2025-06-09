@@ -1,6 +1,6 @@
-import { Router } from "oak";
+import { Router } from "https://deno.land/x/oak@v12.6.1/mod.ts";
 import { MapUploadResponse, MapAnalysisRequest, MapAnalysisResponse, ErrorResponse } from "../types/index.ts";
-import { crypto } from "std/crypto/mod.ts";
+import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
 
 const router = new Router({ prefix: "/api/map" });
 

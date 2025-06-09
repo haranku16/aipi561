@@ -1,4 +1,4 @@
-import { Application } from "oak";
+import { Application } from "https://deno.land/x/oak@v12.6.1/mod.ts";
 import { errorHandler, logger } from "./middleware/index.ts";
 import mapRouter from "./routes/map.ts";
 import healthRouter from "./routes/health.ts";
