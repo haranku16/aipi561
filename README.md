@@ -40,3 +40,60 @@ This repository is a monorepo for the Duke University AIPI561 course "Operationa
   – The backend (deployed via CloudFormation) hosts RESTful API endpoints (e.g., /api/map/upload, /api/map/analyze, /api/auth/login, /api/user/maps).  
   – CloudWatch is used for monitoring (e.g., logging, alarms) and automated deployment hooks (e.g., via AWS CodePipeline) are set up for continuous integration.  
   – Unit tests (e.g., using Jest or pytest) are run as part of the deployment pipeline.
+
+## Local Development and Deployment
+
+### Prerequisites
+
+- Node.js (v18 or later)
+- Deno (latest version)
+- Docker and Docker Compose
+- AWS CDK CLI (`npm install -g aws-cdk`)
+- AWS CLI configured with appropriate credentials
+
+### Local Backend Development
+
+#### Using Deno
+
+Run the backend server:
+
+```bash
+cd backend
+deno task start --allow-net --allow-env --allow-read --allow-run --allow-sys --allow-import
+```
+
+The server will start on `http://localhost:8000` by default.
+
+#### Using Docker
+
+1. Build and start the backend services:
+```bash
+cd backend
+docker build -t aipi561backend .
+docker run -it -p 8000:8000 aipi561backend
+```
+
+This will start the backend server as a container.
+
+### Local CDK Deployment
+
+1. Install dependencies:
+```bash
+cd infrastructure
+npm install
+```
+
+2. Bootstrap your AWS environment (first time only):
+```bash
+npx cdk bootstrap
+```
+
+3. Deploy all stacks:
+```bash
+npx cdk deploy --all
+```
+
+To destroy the deployed resources:
+```bash
+npx cdk destroy --all
+```
