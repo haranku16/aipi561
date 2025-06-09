@@ -34,6 +34,6 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy CDK stack
-        run: npx cdk deploy --require-approval never
+        run: npx cdk deploy --require-approval never --all
         env:
           AWS_REGION: us-east-1 
