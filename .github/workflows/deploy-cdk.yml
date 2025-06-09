@@ -3,7 +3,7 @@ name: Deploy CDK Stack
 on:
   push:
     branches:
-      - 4-backend-api-infrastructure-setup-with-cdk
+      - main
 
 jobs:
   deploy:
