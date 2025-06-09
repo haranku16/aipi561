@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { DynamoDBStack } from '../lib/dynamodb-stack';
 import { S3Stack } from '../lib/s3-stack';
+import { AppRunnerStack } from '../lib/apprunner-stack';
 
 const app = new cdk.App();
 
@@ -38,6 +39,16 @@ const s3Stack = new S3Stack(app, `Aipi561S3-${env}`, {
   env: envConfig.env,
   removalPolicy: env === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
 });
+
+// Create AppRunner stack
+const appRunnerStack = new AppRunnerStack(app, `Aipi561AppRunner-${env}`, {
+  env: envConfig.env,
+  removalPolicy: env === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+  imageBucket: s3Stack.imageBucket,
+  dynamoTable: dynamoStack.table,
+});
+appRunnerStack.addDependency(dynamoStack);
+appRunnerStack.addDependency(s3Stack);
 
 // Add tags to all resources
 cdk.Tags.of(app).add('Project', 'AIPI561');
