@@ -2,44 +2,78 @@
 
 ## Overview
 
-This repository is a monorepo for the Duke University AIPI561 course "Operationalizing AI." The project's goal is to build and operationalize an end-to-end AI application over six weeks. The application takes a picture of a map (with scale, current location, and compass orientation markers) and overlays the user's live GPS location on that map, ideal for indoor use (e.g., in malls).
-
-## Timeline
-
-- **Week 1:** Ideation. Frontend and API design. Setup branches for frontend and backend development with dev container support.
-- **Week 2:** Placeholder backend API hooks deployed via CloudFormation and monitored using CloudWatch, with automated deployment hooks and unit testing.
-- **Week 3:** Frontend application implemented using SvelteKit and deployed on Vercel.
-- **Week 4:** Map analysis API (using Llama 4.0 multi-modal model) to rescale/reframe the map (e.g., if the user's picture is at an odd angle) and extract map coordinates (current location, scale, and orientation). Includes unit testing, deployment, and monitoring.
-- **Week 5:** Auth and user/session management APIs for persisting visited locations (e.g., multiple levels of a mall). Includes unit testing, deployment, and monitoring.
-- **Week 6:** Buffer (reserved for final integration, testing, polish, and documentation updates).
+This repository is a monorepo for the Duke University AIPI561 course "Operationalizing AI." The project's goal is to build and operationalize an end-to-end AI application that provides an intelligent photo album experience. Users can upload photos, which are automatically analyzed using AI to generate descriptions, and then search through their photos using natural language queries.
 
 ## Design
 
+### Architecture Overview
+
+- **Frontend (SvelteKit):**
+  - Modern web application deployed on Vercel
+  - Google OAuth 2.0 authentication
+  - Photo upload and gallery interface
+  - Natural language search interface
+  - Real-time photo processing status updates
+
+- **Backend (Deno):**
+  - RESTful API service
+  - Google OAuth token validation and user info retrieval
+  - Photo upload coordination with S3
+  - DynamoDB record management
+  - Integration with AWS OpenSearch for semantic search
+
+- **Infrastructure (AWS):**
+  - S3 for photo storage
+  - DynamoDB for photo metadata and descriptions
+  - Lambda for async photo processing using OpenAI o4-mini
+  - OpenSearch for semantic search capabilities
+  - CloudWatch for monitoring and logging
+  - CloudFormation/CDK for infrastructure as code
+
 ### API Specifications
 
-- **Map Upload API (POST /api/map/upload):**  
-  – Accepts a multipart/form-data payload (image file) and optional metadata (e.g., user session).  
-  – Returns a JSON response with a map ID (or error details).
+- **Authentication APIs:**
+  - `GET /api/auth/user` - Retrieve authenticated user information (name, email)
+  - Uses Google OAuth 2.0 tokens passed from SvelteKit server
 
-- **Map Analysis API (POST /api/map/analyze):**  
-  – Input: map ID (or image payload) and (optionally) user's current GPS coordinates.  
-  – Output: JSON containing rescaled/reframed map coordinates (current location, scale, and orientation) as computed by the Llama 4.0 multi-modal model.
+- **Photo Management APIs:**
+  - `POST /api/photos/upload` - Upload a new photo
+    - Accepts multipart/form-data with photo file
+    - Returns upload status and photo ID
+  - `GET /api/photos` - List user's photos
+    - Supports pagination and basic filtering
+    - Returns photo metadata including AI-generated descriptions
+  - `GET /api/photos/{id}` - Get specific photo details
+    - Returns full photo metadata and processing status
 
-- **Auth & Session Management APIs:**  
-  – (POST /api/auth/login) – Authenticate a user (e.g., via OAuth or JWT).  
-  – (GET /api/user/maps) – Retrieve a list of saved maps (or "visited locations") for the authenticated user.
+- **Search API:**
+  - `GET /api/photos/search` - Semantic search across photos
+    - Query parameter for natural language search
+    - Returns matching photos with relevance scores
+    - Leverages OpenSearch for AI-powered search
 
 ### Frontend/Backend Interaction
 
-- **Frontend (SvelteKit):**  
-  – The SvelteKit application (deployed on Vercel) provides a user interface for uploading a map image (via a form or drag-and-drop) and (optionally) capturing the user's GPS location (using the Geolocation API).  
-  – On upload, the frontend calls the Map Upload API (POST /api/map/upload) and then triggers the Map Analysis API (POST /api/map/analyze) to overlay the user's live location on the rescaled map.  
-  – The frontend also integrates with Auth APIs (e.g., login and fetching saved maps) to persist user sessions and visited locations.
+- **Authentication Flow:**
+  1. User authenticates via Google OAuth in SvelteKit
+  2. SvelteKit server validates token and passes to backend
+  3. Backend verifies token and retrieves user info from Google
+  4. User info cached in session for subsequent requests
 
-- **Backend (CloudFormation & CloudWatch):**  
-  – The backend (deployed via CloudFormation) hosts RESTful API endpoints (e.g., /api/map/upload, /api/map/analyze, /api/auth/login, /api/user/maps).  
-  – CloudWatch is used for monitoring (e.g., logging, alarms) and automated deployment hooks (e.g., via AWS CodePipeline) are set up for continuous integration.  
-  – Unit tests (e.g., using Jest or pytest) are run as part of the deployment pipeline.
+- **Photo Upload Flow:**
+  1. User uploads photo through SvelteKit frontend
+  2. Frontend calls backend upload API
+  3. Backend stores photo in S3 and creates DynamoDB record
+  4. Lambda triggered to process photo with OpenAI o4-mini
+  5. DynamoDB record updated with AI description
+  6. OpenSearch index updated for search capabilities
+
+- **Search Flow:**
+  1. User enters natural language query
+  2. Frontend calls search API
+  3. Backend queries OpenSearch
+  4. Results returned with relevance scores
+  5. Frontend displays matching photos
 
 ## Local Development and Deployment
 
