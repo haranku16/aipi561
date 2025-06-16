@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import { fade } from 'svelte/transition';
+  import { onMount } from 'svelte';
 
   export let data: PageData;
 
@@ -38,6 +39,18 @@
       day: 'numeric'
     }).format(date);
   }
+
+  onMount(async () => {
+    if (data.user) {
+      try {
+        const res = await fetch('/api/auth/user');
+        const result = await res.json();
+        console.log('Backend /api/auth/user result:', result);
+      } catch (err) {
+        console.error('Error calling backend /api/auth/user:', err);
+      }
+    }
+  });
 </script>
 
 <div class="container mx-auto px-4 py-8">

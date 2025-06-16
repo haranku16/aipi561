@@ -1,8 +1,8 @@
 {
   "tasks": {
-    "dev": "deno run --allow-net --allow-env --allow-read --allow-run --watch src/server.ts",
-    "test": "deno test --allow-net --allow-env --allow-read --allow-run",
-    "start": "deno run --allow-net --allow-env --allow-read --allow-run src/server.ts"
+    "dev": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --watch src/server.ts",
+    "test": "deno test --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import",
+    "start": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import src/server.ts"
   },
   "imports": {
     "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",

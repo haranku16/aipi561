@@ -8,9 +8,11 @@ if (!GOOGLE_OAUTH_CLIENT_ID) {
 export async function verifyGoogleToken(token: string): Promise<UserInfo> {
   try {
     // Call Google's tokeninfo endpoint to verify the token
-    const response = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`
-    );
+    const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
     if (!response.ok) {
       throw new Error("Invalid token");
@@ -18,15 +20,12 @@ export async function verifyGoogleToken(token: string): Promise<UserInfo> {
 
     const data = await response.json();
 
-    // Verify the token was issued for our application
-    if (data.aud !== GOOGLE_OAUTH_CLIENT_ID) {
-      throw new Error("Token was not issued for this application");
-    }
-
     // Return the user info
     return {
       email: data.email,
       name: data.name,
+      given_name: data.given_name,
+      family_name: data.family_name,
       picture: data.picture,
     };
   } catch (error) {
