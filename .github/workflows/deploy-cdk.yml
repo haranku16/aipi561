@@ -3,7 +3,7 @@ name: Deploy CDK Stack
 on:
   push:
     branches:
-      - main
+      - 8-auth
 
 jobs:
   deploy:
@@ -34,6 +34,6 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy CDK stack
-        run: npx cdk deploy --require-approval never --all
+        run: GOOGLE_OAUTH_CLIENT_ID="${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}" npx cdk deploy --require-approval never --all
         env:
           AWS_REGION: us-east-1 

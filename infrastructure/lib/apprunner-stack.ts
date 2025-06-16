@@ -58,6 +58,10 @@ export class AppRunnerStack extends cdk.Stack {
           port: 8000,
           environmentVariables: {
             NODE_ENV: 'production',
+            GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID!,
+            S3_BUCKET: props.imageBucket.bucketName,
+            DYNAMODB_TABLE: props.dynamoTable.tableName,
+            OPENSEARCH_DOMAIN: 'placeholder',
           },
         },
       }),
