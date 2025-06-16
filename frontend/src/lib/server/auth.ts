@@ -1,13 +1,10 @@
-import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
 // OAuth configuration
 export const oauthConfig = {
   clientId: env.GOOGLE_OAUTH_CLIENT_ID,
   clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
-  redirectUri: dev 
-    ? 'http://localhost:5173/auth/callback'
-    : 'https://your-production-domain.com/auth/callback',
+  redirectUri: env.APP_URL + '/auth/callback',
   scopes: ['openid', 'profile', 'email'],
   authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
   tokenUrl: 'https://oauth2.googleapis.com/token',
@@ -24,6 +21,7 @@ export function generateOAuthState(): string {
 
 // Generate OAuth URL
 export function generateOAuthUrl(state: string): string {
+  console.log(oauthConfig.redirectUri);
   const params = new URLSearchParams({
     client_id: oauthConfig.clientId,
     redirect_uri: oauthConfig.redirectUri,
