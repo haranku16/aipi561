@@ -3,7 +3,7 @@ name: Deploy CDK Stack
 on:
   push:
     branches:
-      - 8-auth
+      - main
 
 jobs:
   deploy:
