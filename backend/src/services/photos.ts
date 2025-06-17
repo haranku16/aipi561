@@ -21,6 +21,7 @@ import {
 } from "https://deno.land/x/aws_sdk@v3.32.0-1/client-dynamodb/mod.ts";
 import { getSignedUrl } from "https://deno.land/x/aws_sdk@v3.32.0-1/s3-request-presigner/mod.ts";
 import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
+import { enqueuePhotoProcessing } from "./queue-processor.ts";
 
 const S3_BUCKET = Deno.env.get("S3_BUCKET");
 const DYNAMODB_TABLE = Deno.env.get("DYNAMODB_TABLE");
@@ -298,6 +299,9 @@ export async function uploadImage(
   };
 
   await dynamoClient.send(new PutItemCommand(putItemInput));
+
+  // Enqueue photo for AI processing using Deno Queues
+  await enqueuePhotoProcessing(photoId, userId, s3Key);
 
   // Generate presigned URL for viewing the image
   const getObjectInput = {

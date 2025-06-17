@@ -4,6 +4,7 @@ import authRouter from "./routes/auth.ts";
 import photosRouter from "./routes/photos.ts";
 import healthRouter from "./routes/health.ts";
 import { PORT } from "./config/index.ts";
+import { setupQueueListener } from "./services/queue-processor.ts";
 
 // Create and configure application
 const app = new Application();
@@ -17,6 +18,9 @@ app.use(authMiddleware);
 app.use(authRouter.routes(), authRouter.allowedMethods());
 app.use(photosRouter.routes(), photosRouter.allowedMethods());
 app.use(healthRouter.routes(), healthRouter.allowedMethods());
+
+// Initialize queue listener for background processing
+await setupQueueListener();
 
 // Start server
 console.log(`Server running on port ${PORT}`);
