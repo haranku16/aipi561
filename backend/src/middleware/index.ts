@@ -1,4 +1,13 @@
 import { Context, Next } from "https://deno.land/x/oak@v12.6.1/mod.ts";
+import { verifyGoogleToken } from "../services/auth.ts";
+import { UserInfo } from "../types/index.ts";
+
+// Create a custom context type that includes user data
+export interface AuthenticatedContext extends Context {
+  state: {
+    user?: UserInfo;
+  } & Record<string, unknown>;
+}
 
 export async function errorHandler(ctx: Context, next: Next) {
   try {
@@ -15,4 +24,28 @@ export async function logger(ctx: Context, next: Next) {
   await next();
   const ms = Date.now() - start;
   console.log(`${ctx.request.method} ${ctx.request.url.pathname} - ${ms}ms`);
+}
+
+export async function authMiddleware(ctx: AuthenticatedContext, next: Next) {
+  // Initialize user state
+  ctx.state.user = undefined;
+  
+  // Get the Authorization header
+  const authHeader = ctx.request.headers.get("Authorization");
+  
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7); // Remove "Bearer " prefix
+    
+    try {
+      // Verify the token and get user info
+      const userInfo = await verifyGoogleToken(token);
+      ctx.state.user = userInfo;
+    } catch (error) {
+      console.error("Authentication error:", error);
+      // Don't throw error here - just leave user as undefined
+      // This allows routes to handle authentication as needed
+    }
+  }
+  
+  await next();
 } 
