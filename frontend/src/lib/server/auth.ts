@@ -21,7 +21,6 @@ export function generateOAuthState(): string {
 
 // Generate OAuth URL
 export function generateOAuthUrl(state: string): string {
-  console.log(oauthConfig.redirectUri);
   const params = new URLSearchParams({
     client_id: oauthConfig.clientId,
     redirect_uri: oauthConfig.redirectUri,
