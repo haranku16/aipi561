@@ -2,7 +2,8 @@
   "tasks": {
     "dev": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv --watch src/server.ts",
     "test": "deno test --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv",
-    "start": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv src/server.ts"
+    "start": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv src/server.ts",
+    "test-upload": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv test-upload.ts"
   },
   "imports": {
     "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",

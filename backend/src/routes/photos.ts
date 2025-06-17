@@ -7,7 +7,7 @@ import {
   ErrorResponse,
   PhotoMetadata 
 } from "../types/index.ts";
-import { generatePresignedUrl, listPhotos, searchPhotos, uploadImage, getPhoto } from "../services/photos.ts";
+import { generatePresignedUrl, listPhotos, searchPhotos, uploadImage, getPhoto, getPhotoByLookupKey } from "../services/photos.ts";
 import { requireAuth } from "../middleware/auth-helpers.ts";
 
 const router = new Router({ prefix: "/api/photos" });
@@ -174,19 +174,19 @@ router.get("/search", async (ctx) => {
 });
 
 // Get presigned URL for viewing a specific photo
-router.get("/:photoId/url", async (ctx) => {
+router.get("/:lookupKey/url", async (ctx) => {
   try {
     const user = requireAuth(ctx);
-    const photoId = ctx.params.photoId;
+    const lookupKey = ctx.params.lookupKey;
     
-    if (!photoId) {
+    if (!lookupKey) {
       ctx.response.status = 400;
-      ctx.response.body = { error: "Photo ID is required" } as ErrorResponse;
+      ctx.response.body = { error: "Lookup key is required" } as ErrorResponse;
       return;
     }
 
     // Verify the photo belongs to the user by querying DynamoDB
-    const photo = await getPhoto(photoId, user.email);
+    const photo = await getPhotoByLookupKey(user.email, lookupKey);
     
     if (!photo) {
       ctx.response.status = 404;
@@ -219,6 +219,48 @@ router.get("/:photoId/url", async (ctx) => {
     } else {
       ctx.response.status = 500;
       ctx.response.body = { error: "Failed to generate presigned URL" } as ErrorResponse;
+    }
+  }
+});
+
+// Get photo status by lookupKey
+router.get("/:lookupKey/status", async (ctx) => {
+  try {
+    const user = requireAuth(ctx);
+    const lookupKey = ctx.params.lookupKey;
+    
+    if (!lookupKey) {
+      ctx.response.status = 400;
+      ctx.response.body = { error: "Lookup key is required" } as ErrorResponse;
+      return;
+    }
+
+    // Get the photo metadata from DynamoDB using direct lookup
+    const photo = await getPhotoByLookupKey(user.email, lookupKey);
+    
+    if (!photo) {
+      ctx.response.status = 404;
+      ctx.response.body = { error: "Photo not found" } as ErrorResponse;
+      return;
+    }
+    
+    // Return the photo status and metadata
+    ctx.response.body = {
+      photoId: photo.photoId,
+      status: photo.status,
+      uploadTimestamp: photo.uploadTimestamp,
+      title: photo.title,
+      description: photo.description,
+      processingError: photo.processingError
+    };
+  } catch (error) {
+    console.error("Get status error:", error);
+    if (error instanceof Error && error.message === "Authentication required") {
+      ctx.response.status = 401;
+      ctx.response.body = { error: "Authentication required" } as ErrorResponse;
+    } else {
+      ctx.response.status = 500;
+      ctx.response.body = { error: "Failed to get photo status" } as ErrorResponse;
     }
   }
 });

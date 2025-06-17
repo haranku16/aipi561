@@ -29,6 +29,7 @@ export interface PhotoMetadata {
   title?: string; // AI-generated title
   description?: string; // AI-generated description
   processingError?: string;
+  lookupKey?: string; // Compound sort key for direct DynamoDB lookups
 }
 
 export interface PhotoListResponse {

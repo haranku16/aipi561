@@ -15,8 +15,10 @@ import {
   DynamoDBClient,
   PutItemCommand,
   QueryCommand,
+  GetItemCommand,
   type PutItemCommandInput,
   type QueryCommandInput,
+  type GetItemCommandInput,
   type AttributeValue
 } from "https://deno.land/x/aws_sdk@v3.32.0-1/client-dynamodb/mod.ts";
 import { getSignedUrl } from "https://deno.land/x/aws_sdk@v3.32.0-1/s3-request-presigner/mod.ts";
@@ -62,7 +64,8 @@ export async function generatePresignedUrl(
     userId,
     s3Key,
     uploadTimestamp: timestamp,
-    status: "pending"
+    status: "pending",
+    lookupKey: sortKey
   };
 
   const putItemInput: PutItemCommandInput = {
@@ -123,7 +126,8 @@ export async function listPhotos(
     status: item.status.S! as PhotoMetadata["status"],
     title: item.title?.S,
     description: item.description?.S,
-    processingError: item.processingError?.S
+    processingError: item.processingError?.S,
+    lookupKey: item.SK.S!
   })) || [];
 
   return {
@@ -248,7 +252,41 @@ export async function getPhoto(
     status: item.status.S! as PhotoMetadata["status"],
     title: item.title?.S,
     description: item.description?.S,
-    processingError: item.processingError?.S
+    processingError: item.processingError?.S,
+    lookupKey: item.SK.S!
+  };
+}
+
+// Get a single photo by lookupKey for direct DynamoDB access
+export async function getPhotoByLookupKey(
+  userId: string,
+  lookupKey: string
+): Promise<PhotoMetadata | null> {
+  const getItemInput: GetItemCommandInput = {
+    TableName: DYNAMODB_TABLE,
+    Key: {
+      PK: { S: `USER#${userId}` },
+      SK: { S: lookupKey }
+    }
+  };
+
+  const result = await dynamoClient.send(new GetItemCommand(getItemInput));
+
+  if (!result.Item) {
+    return null;
+  }
+
+  const item = result.Item;
+  return {
+    photoId: item.photoId.S!,
+    userId: item.userId.S!,
+    s3Key: item.s3Key.S!,
+    uploadTimestamp: item.uploadTimestamp.S!,
+    status: item.status.S! as PhotoMetadata["status"],
+    title: item.title?.S,
+    description: item.description?.S,
+    processingError: item.processingError?.S,
+    lookupKey: item.SK.S!
   };
 }
 
@@ -281,7 +319,8 @@ export async function uploadImage(
     userId,
     s3Key,
     uploadTimestamp: timestamp,
-    status: "pending" // Set to pending until AI analysis is complete
+    status: "pending", // Set to pending until AI analysis is complete
+    lookupKey: sortKey
   };
 
   // Store metadata in DynamoDB using single-table design
