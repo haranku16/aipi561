@@ -35,7 +35,7 @@ jobs:
         working-directory: ./backend
 
       - name: Generate detailed coverage report
-        run: deno coverage --html cov/ --output=cov-html
+        run: deno coverage --lcov --html cov/ --output=cov-html
         working-directory: ./backend
 
       - name: Check coverage thresholds
