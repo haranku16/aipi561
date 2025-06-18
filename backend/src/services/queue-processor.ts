@@ -141,9 +141,11 @@ INSTRUCTIONS:
    - SEO-friendly with relevant keywords
    - Professional yet accessible
 
-3. Format your response as:
-   Title: [Your title here]
-   Description: [Your description here]
+3. Respond with a JSON object in this exact format:
+{
+  "title": "Your title here",
+  "description": "Your description here"
+}
 
 Please be detailed in your analysis and create content that would help users discover and understand this photo.`;
 
@@ -174,7 +176,8 @@ Please be detailed in your analysis and create content that would help users dis
         }
       ],
       max_tokens: 300,
-      temperature: 0.7
+      temperature: 0.7,
+      response_format: { type: "json_object" }
     })
   });
 
@@ -190,37 +193,32 @@ Please be detailed in your analysis and create content that would help users dis
     throw new Error("No content received from OpenAI API");
   }
 
-  // Parse the response to extract title and description
-  // The AI should return them in a structured format
-  const lines = content.split('\n').filter((line: string) => line.trim());
-  
-  let title = "";
-  let description = "";
-
-  for (const line of lines) {
-    if (line.toLowerCase().includes('title:') || line.toLowerCase().includes('title -')) {
-      title = line.split(':').slice(1).join(':').trim();
-    } else if (line.toLowerCase().includes('description:') || line.toLowerCase().includes('description -')) {
-      description = line.split(':').slice(1).join(':').trim();
+  try {
+    // Parse the JSON response
+    const aiResponse = JSON.parse(content);
+    
+    if (!aiResponse.title || !aiResponse.description) {
+      throw new Error("Invalid JSON response: missing title or description");
     }
+
+    let title = aiResponse.title.toString().trim();
+    let description = aiResponse.description.toString().trim();
+
+    // Ensure character limits
+    title = title.length > 60 ? title.substring(0, 57) + "..." : title;
+    description = description.length > 160 ? description.substring(0, 157) + "..." : description;
+
+    return { title, description };
+  } catch (parseError) {
+    console.error("Failed to parse AI response as JSON:", parseError);
+    console.error("Raw response:", content);
+    
+    // Fallback to a default response
+    return {
+      title: `AI Generated Title for ${photoId}`,
+      description: "AI-generated description for this photo"
+    };
   }
-
-  // If parsing failed, use the first line as title and rest as description
-  if (!title || !description) {
-    if (lines.length >= 2) {
-      title = lines[0].trim();
-      description = lines.slice(1).join(' ').trim();
-    } else {
-      title = `AI Generated Title for ${photoId}`;
-      description = content.trim();
-    }
-  }
-
-  // Ensure character limits
-  title = title.length > 60 ? title.substring(0, 57) + "..." : title;
-  description = description.length > 160 ? description.substring(0, 157) + "..." : description;
-
-  return { title, description };
 }
 
 // Background task to process photo with AI
