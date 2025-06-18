@@ -27,13 +27,50 @@ export class AppRunnerStack extends cdk.Stack {
     const serviceRole = new iam.Role(this, 'ServiceRole', {
       assumedBy: new iam.ServicePrincipal('tasks.apprunner.amazonaws.com'),
       description: 'Service role for AIPI561 AppRunner service',
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSAppRunnerServicePolicyForECRAccess')
+      ]
     });
+
+    // Add trust relationship for AppRunner
+    serviceRole.assumeRolePolicy?.addStatements(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        principals: [
+          new iam.ServicePrincipal('tasks.apprunner.amazonaws.com'),
+          new iam.ServicePrincipal('build.apprunner.amazonaws.com')
+        ],
+        actions: ['sts:AssumeRole']
+      })
+    );
 
     // Grant S3 access
     props.imageBucket.grantReadWrite(serviceRole);
 
     // Grant DynamoDB access
     props.dynamoTable.grantReadWriteData(serviceRole);
+
+    // Add explicit STS permissions for credential verification
+    serviceRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'sts:GetCallerIdentity',
+        'sts:AssumeRole'
+      ],
+      resources: ['*']
+    }));
+
+    // Add CloudWatch Logs permissions for better debugging
+    serviceRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'logs:CreateLogGroup',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+        'logs:DescribeLogStreams'
+      ],
+      resources: ['*']
+    }));
 
     // Create access role for ECR
     const accessRole = new iam.Role(this, 'AccessRole', {
@@ -58,8 +95,8 @@ export class AppRunnerStack extends cdk.Stack {
           port: 8000,
           environmentVariables: {
             NODE_ENV: 'production',
-            GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID!,
-            OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
+            GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID || '',
+            OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
             S3_BUCKET: props.imageBucket.bucketName,
             DYNAMODB_TABLE: props.dynamoTable.tableName,
             OPENSEARCH_DOMAIN: 'placeholder',
@@ -84,6 +121,12 @@ export class AppRunnerStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'RepositoryUri', {
       value: image.repository.repositoryUri,
       description: 'The URI of the ECR repository',
+    });
+
+    // Output the service role ARN for debugging
+    new cdk.CfnOutput(this, 'ServiceRoleArn', {
+      value: serviceRole.roleArn,
+      description: 'The ARN of the AppRunner service role',
     });
   }
 } 

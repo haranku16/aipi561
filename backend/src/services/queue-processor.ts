@@ -1,18 +1,15 @@
 /// <reference lib="deno.unstable" />
 
-import { dynamoClient } from "../config/index.ts";
-import { 
-  DynamoDBClient,
+import { dynamoClient, s3Client } from "../config/index.ts";
+import {
   UpdateItemCommand,
   QueryCommand,
   type UpdateItemCommandInput,
-  type QueryCommandInput,
-  type AttributeValue
-} from "https://deno.land/x/aws_sdk@v3.32.0-1/client-dynamodb/mod.ts";
+  type QueryCommandInput
+} from "@aws-sdk/client-dynamodb";
 import { 
-  S3Client, 
-  GetObjectCommand 
-} from "https://deno.land/x/aws_sdk@v3.32.0-1/client-s3/mod.ts";
+  GetObjectCommand
+} from "@aws-sdk/client-s3";
 
 const DYNAMODB_TABLE = Deno.env.get("DYNAMODB_TABLE");
 const S3_BUCKET = Deno.env.get("S3_BUCKET");
@@ -25,10 +22,6 @@ if (!DYNAMODB_TABLE || !S3_BUCKET) {
 if (!OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable is required for AI processing");
 }
-
-const s3Client = new S3Client({
-  region: Deno.env.get("AWS_REGION") || "us-east-1",
-});
 
 // Define the message structure for the queue
 interface PhotoProcessingMessage {
@@ -204,7 +197,7 @@ Please be detailed in your analysis and create content that would help users dis
   let title = "";
   let description = "";
 
-  for (const line: string of lines) {
+  for (const line of lines) {
     if (line.toLowerCase().includes('title:') || line.toLowerCase().includes('title -')) {
       title = line.split(':').slice(1).join(':').trim();
     } else if (line.toLowerCase().includes('description:') || line.toLowerCase().includes('description -')) {

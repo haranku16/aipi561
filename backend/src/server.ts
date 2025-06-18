@@ -3,7 +3,7 @@ import { errorHandler, logger, authMiddleware } from "./middleware/index.ts";
 import authRouter from "./routes/auth.ts";
 import photosRouter from "./routes/photos.ts";
 import healthRouter from "./routes/health.ts";
-import { PORT } from "./config/index.ts";
+import { PORT, testAWSCredentials } from "./config/index.ts";
 import { setupQueueListener } from "./services/queue-processor.ts";
 
 // Create and configure application
@@ -18,6 +18,15 @@ app.use(authMiddleware);
 app.use(authRouter.routes(), authRouter.allowedMethods());
 app.use(photosRouter.routes(), photosRouter.allowedMethods());
 app.use(healthRouter.routes(), healthRouter.allowedMethods());
+
+// Test AWS credentials before starting
+console.log("Testing AWS credentials...");
+try {
+  await testAWSCredentials();
+} catch (error) {
+  console.error("Failed to verify AWS credentials. The application may not work properly.");
+  // Don't throw here - let the server start and see if it works anyway
+}
 
 // Initialize queue listener for background processing
 await setupQueueListener();

@@ -4,11 +4,13 @@ import {
   PhotoListResponse, 
   PhotoSearchRequest, 
   PhotoSearchResponse,
-  ErrorResponse,
-  PhotoMetadata 
+  ErrorResponse
 } from "../types/index.ts";
 import { generatePresignedUrl, listPhotos, searchPhotos, uploadImage, getPhoto, getPhotoByLookupKey, deletePhoto } from "../services/photos.ts";
 import { requireAuth } from "../middleware/auth-helpers.ts";
+import { s3Client } from "../config/index.ts";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const router = new Router({ prefix: "/api/photos" });
 
@@ -198,14 +200,6 @@ router.get("/:lookupKey/url", async (ctx) => {
       Bucket: Deno.env.get("S3_BUCKET")!,
       Key: photo.s3Key,
     };
-
-    const { getSignedUrl } = await import("https://deno.land/x/aws_sdk@v3.32.0-1/s3-request-presigner/mod.ts");
-    const { GetObjectCommand } = await import("https://deno.land/x/aws_sdk@v3.32.0-1/client-s3/mod.ts");
-    const { S3Client } = await import("https://deno.land/x/aws_sdk@v3.32.0-1/client-s3/mod.ts");
-    
-    const s3Client = new S3Client({
-      region: Deno.env.get("AWS_REGION") || "us-east-1",
-    });
 
     const getCommand = new GetObjectCommand(getObjectInput);
     const presignedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
