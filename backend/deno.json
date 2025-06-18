@@ -8,7 +8,11 @@
   "imports": {
     "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
     "dynamodb": "https://deno.land/x/dynamodb@v1.3.0/mod.ts",
-    "std/": "https://deno.land/std@0.208.0/"
+    "std/": "https://deno.land/std@0.208.0/",
+    "@aws-sdk/client-dynamodb": "npm:@aws-sdk/client-dynamodb@3.490.0",
+    "@aws-sdk/client-s3": "npm:@aws-sdk/client-s3@3.490.0",
+    "@aws-sdk/client-sts": "npm:@aws-sdk/client-sts@3.490.0",
+    "@aws-sdk/s3-request-presigner": "npm:@aws-sdk/s3-request-presigner@3.490.0"
   },
   "compilerOptions": {
     "allowJs": true,

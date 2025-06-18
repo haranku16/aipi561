@@ -4,16 +4,14 @@ import {
   PhotoSearchResponse,
   PhotoMetadata 
 } from "../types/index.ts";
-import { dynamoClient } from "../config/index.ts";
+import { dynamoClient, s3Client } from "../config/index.ts";
 import { 
-  S3Client, 
   GetObjectCommand, 
   PutObjectCommand,
   DeleteObjectCommand,
   type PutObjectCommandInput 
-} from "https://deno.land/x/aws_sdk@v3.32.0-1/client-s3/mod.ts";
+} from "@aws-sdk/client-s3";
 import { 
-  DynamoDBClient,
   PutItemCommand,
   QueryCommand,
   GetItemCommand,
@@ -23,8 +21,8 @@ import {
   type GetItemCommandInput,
   type DeleteItemCommandInput,
   type AttributeValue
-} from "https://deno.land/x/aws_sdk@v3.32.0-1/client-dynamodb/mod.ts";
-import { getSignedUrl } from "https://deno.land/x/aws_sdk@v3.32.0-1/s3-request-presigner/mod.ts";
+} from "@aws-sdk/client-dynamodb";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
 import { enqueuePhotoProcessing } from "./queue-processor.ts";
 
@@ -34,10 +32,6 @@ const DYNAMODB_TABLE = Deno.env.get("DYNAMODB_TABLE");
 if (!S3_BUCKET || !DYNAMODB_TABLE) {
   throw new Error("Required environment variables are missing");
 }
-
-const s3Client = new S3Client({
-  region: Deno.env.get("AWS_REGION") || "us-east-1",
-});
 
 // Generate a unique photo ID
 function generatePhotoId(): string {
