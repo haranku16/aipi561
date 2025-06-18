@@ -13,6 +13,7 @@ export class DynamoDBStack extends cdk.Stack {
     super(scope, id, props);
 
     // Create DynamoDB table with single-table design
+    // PK: USER#userId, SK: timestamp#photoId for efficient user photo queries
     this.table = new dynamodb.Table(this, 'Aipi561Table', {
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
