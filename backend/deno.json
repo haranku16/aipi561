@@ -3,6 +3,8 @@
     "dev": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv --watch src/server.ts",
     "test": "deno test --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv --parallel --reporter=pretty",
     "test:coverage": "deno test --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv --parallel --coverage=coverage",
+    "test:coverage:report": "deno test --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv --parallel --coverage=cov/ && deno coverage --html cov/ --output=cov-html && deno coverage --lcov cov/ > cov.lcov",
+    "test:coverage:check": "deno test --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv --parallel --coverage=cov/ && deno coverage cov/",
     "start": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv src/server.ts",
     "test-upload": "deno run --allow-net --allow-env --env-file=.env --allow-read --allow-run --allow-sys --allow-import --unstable-kv test-upload.ts"
   },
