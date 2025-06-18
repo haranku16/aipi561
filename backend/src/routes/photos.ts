@@ -4,11 +4,12 @@ import {
   PhotoListResponse, 
   ErrorResponse
 } from "../types/index.ts";
-import { generatePresignedUrl, listPhotos, uploadImage, getPhoto, getPhotoByLookupKey, deletePhoto } from "../services/photos.ts";
+import { ServiceFactory } from "../config/service-factory.ts";
 import { requireAuth } from "../middleware/auth-helpers.ts";
-import { s3Client } from "../config/index.ts";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createAWSClients } from "../config/aws-clients.ts";
+import { createEnvironmentConfig } from "../config/environment.ts";
 
 const router = new Router({ prefix: "/api/photos" });
 
@@ -45,8 +46,11 @@ router.post("/upload", async (ctx) => {
       return;
     }
 
+    // Get services from factory
+    const { photosService } = ServiceFactory.createServices();
+
     // Upload image and get metadata
-    const { photoMetadata, presignedUrl } = await uploadImage(
+    const { photoMetadata, presignedUrl } = await photosService.uploadImage(
       user.email,
       imageBuffer,
       filename,
@@ -84,7 +88,10 @@ router.post("/upload-url", async (ctx) => {
       return;
     }
 
-    const { photoId, uploadUrl } = await generatePresignedUrl(
+    // Get services from factory
+    const { photosService } = ServiceFactory.createServices();
+
+    const { photoId, uploadUrl } = await photosService.generatePresignedUrl(
       user.email,
       filename,
       contentType
@@ -116,7 +123,10 @@ router.get("/", async (ctx) => {
     const nextToken = ctx.request.url.searchParams.get("nextToken") || undefined;
     const pageSize = parseInt(ctx.request.url.searchParams.get("pageSize") || "20");
 
-    const response: PhotoListResponse = await listPhotos(
+    // Get services from factory
+    const { photosService } = ServiceFactory.createServices();
+
+    const response: PhotoListResponse = await photosService.listPhotos(
       user.email,
       pageSize,
       nextToken
@@ -147,8 +157,13 @@ router.get("/:lookupKey/url", async (ctx) => {
       return;
     }
 
+    // Get services from factory
+    const { photosService } = ServiceFactory.createServices();
+    const config = createEnvironmentConfig();
+    const { s3Client } = createAWSClients(config.awsRegion);
+
     // Verify the photo belongs to the user by querying DynamoDB
-    const photo = await getPhotoByLookupKey(user.email, lookupKey);
+    const photo = await photosService.getPhotoByLookupKey(user.email, lookupKey);
     
     if (!photo) {
       ctx.response.status = 404;
@@ -157,7 +172,7 @@ router.get("/:lookupKey/url", async (ctx) => {
     }
     
     const getObjectInput = {
-      Bucket: Deno.env.get("S3_BUCKET")!,
+      Bucket: config.s3Bucket,
       Key: photo.s3Key,
     };
 
@@ -189,8 +204,11 @@ router.get("/:lookupKey/status", async (ctx) => {
       return;
     }
 
+    // Get services from factory
+    const { photosService } = ServiceFactory.createServices();
+
     // Get the photo metadata from DynamoDB using direct lookup
-    const photo = await getPhotoByLookupKey(user.email, lookupKey);
+    const photo = await photosService.getPhotoByLookupKey(user.email, lookupKey);
     
     if (!photo) {
       ctx.response.status = 404;
@@ -231,7 +249,10 @@ router.delete("/:lookupKey", async (ctx) => {
       return;
     }
 
-    const success = await deletePhoto(user.email, lookupKey);
+    // Get services from factory
+    const { photosService } = ServiceFactory.createServices();
+
+    const success = await photosService.deletePhoto(user.email, lookupKey);
     
     if (!success) {
       ctx.response.status = 404;

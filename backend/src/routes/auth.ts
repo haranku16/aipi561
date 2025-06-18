@@ -1,6 +1,6 @@
 import { Router } from "https://deno.land/x/oak@v12.6.1/mod.ts";
 import { UserInfo, ErrorResponse } from "../types/index.ts";
-import { verifyGoogleToken } from "../services/auth.ts";
+import { ServiceFactory } from "../config/service-factory.ts";
 
 const router = new Router({ prefix: "/api/auth" });
 
@@ -17,8 +17,11 @@ router.get("/user", async (ctx) => {
     // Extract the token
     const token = authHeader.split(" ")[1];
     
+    // Get services from factory
+    const { authService } = ServiceFactory.createServices();
+    
     // Verify the token and get user info
-    const userInfo = await verifyGoogleToken(token);
+    const userInfo = await authService.verifyGoogleToken(token);
     
     ctx.response.body = userInfo as UserInfo;
   } catch (error) {
