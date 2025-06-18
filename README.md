@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository is a monorepo for the Duke University AIPI561 course "Operationalizing AI." The project's goal is to build and operationalize an end-to-end AI application that provides an intelligent photo album experience. Users can upload photos, which are automatically analyzed using AI to generate descriptions, and then search through their photos using natural language queries.
+This repository is a monorepo for the Duke University AIPI561 course "Operationalizing AI." The project's goal is to build and operationalize an end-to-end AI application that provides an intelligent photo album experience. Users can upload photos, which are automatically analyzed using AI to generate descriptions, and then filter through their photos using the frontend interface.
 
 ## Design
 
@@ -12,7 +12,7 @@ This repository is a monorepo for the Duke University AIPI561 course "Operationa
   - Modern web application deployed on Vercel
   - Google OAuth 2.0 authentication
   - Photo upload and gallery interface
-  - Natural language search interface
+  - Client-side filtering and search interface
   - Real-time photo processing status updates
 
 - **Backend (Deno):**
@@ -20,13 +20,12 @@ This repository is a monorepo for the Duke University AIPI561 course "Operationa
   - Google OAuth token validation and user info retrieval
   - Photo upload coordination with S3
   - DynamoDB record management
-  - Integration with AWS OpenSearch for semantic search
+  - AI-powered photo analysis and description generation
 
 - **Infrastructure (AWS):**
   - S3 for photo storage
   - DynamoDB for photo metadata and descriptions
   - Lambda for async photo processing using OpenAI o4-mini
-  - OpenSearch for semantic search capabilities
   - CloudWatch for monitoring and logging
   - CloudFormation/CDK for infrastructure as code
 
@@ -46,12 +45,6 @@ This repository is a monorepo for the Duke University AIPI561 course "Operationa
   - `GET /api/photos/{id}` - Get specific photo details
     - Returns full photo metadata and processing status
 
-- **Search API:**
-  - `GET /api/photos/search` - Semantic search across photos
-    - Query parameter for natural language search
-    - Returns matching photos with relevance scores
-    - Leverages OpenSearch for AI-powered search
-
 ### Frontend/Backend Interaction
 
 - **Authentication Flow:**
@@ -66,14 +59,13 @@ This repository is a monorepo for the Duke University AIPI561 course "Operationa
   3. Backend stores photo in S3 and creates DynamoDB record
   4. Lambda triggered to process photo with OpenAI o4-mini
   5. DynamoDB record updated with AI description
-  6. OpenSearch index updated for search capabilities
+  6. Frontend displays updated photo with AI-generated content
 
-- **Search Flow:**
-  1. User enters natural language query
-  2. Frontend calls search API
-  3. Backend queries OpenSearch
-  4. Results returned with relevance scores
-  5. Frontend displays matching photos
+- **Photo Filtering Flow:**
+  1. User enters search query or applies filters
+  2. Frontend performs client-side filtering on loaded photos
+  3. Results filtered by title, description, and status
+  4. Frontend displays matching photos with real-time updates
 
 ## Local Development and Deployment
 

@@ -1,7 +1,5 @@
 import { 
   PhotoListResponse, 
-  PhotoSearchRequest, 
-  PhotoSearchResponse,
   PhotoMetadata 
 } from "../types/index.ts";
 import { dynamoClient, s3Client } from "../config/index.ts";
@@ -131,87 +129,6 @@ export async function listPhotos(
     photos,
     nextToken: result.LastEvaluatedKey ? btoa(JSON.stringify(result.LastEvaluatedKey)) : undefined
   };
-}
-
-// Search photos using OpenSearch
-export async function searchPhotos(
-  userId: string,
-  request: PhotoSearchRequest
-): Promise<PhotoSearchResponse> {
-  // TODO: Fix OpenSearch client usage
-  // For now, return empty results
-  return {
-    results: [],
-    nextToken: undefined
-  };
-  
-  /*
-  const pageSize = request.pageSize || 20;
-  const from = request.nextToken ? parseInt(atob(request.nextToken)) : 0;
-
-  // Define the search request body type
-  type SearchRequestBody = {
-    query: {
-      bool: {
-        must: Array<{
-          term?: { [key: string]: string };
-          multi_match?: {
-            query: string;
-            fields: string[];
-            type: string;
-            fuzziness: string;
-          };
-        }>;
-      };
-    };
-    size: number;
-    from: number;
-  };
-
-  const searchBody: SearchRequestBody = {
-    query: {
-      bool: {
-        must: [
-          { term: { userId } },
-          {
-            multi_match: {
-              query: request.query,
-              fields: ["description^2", "filename"],
-              type: "best_fields",
-              fuzziness: "AUTO"
-            }
-          }
-        ]
-      }
-    },
-    size: pageSize,
-    from
-  };
-
-  const response = await opensearchClient.send(new SearchCommand({
-    index: "photos",
-    body: searchBody
-  }));
-
-  // Type assertion for the response
-  type SearchHit = {
-    _source: PhotoMetadata;
-    _score: number;
-  };
-
-  const hits = (response as any).hits?.hits as SearchHit[] || [];
-  const results = hits.map(hit => ({
-    ...hit._source,
-    score: hit._score
-  }));
-
-  return {
-    results,
-    nextToken: hits.length === pageSize 
-      ? btoa(String(from + pageSize))
-      : undefined
-  };
-  */
 }
 
 // Get a single photo by photoId and userId

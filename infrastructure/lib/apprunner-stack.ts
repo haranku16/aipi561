@@ -99,7 +99,6 @@ export class AppRunnerStack extends cdk.Stack {
             OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
             S3_BUCKET: props.imageBucket.bucketName,
             DYNAMODB_TABLE: props.dynamoTable.tableName,
-            OPENSEARCH_DOMAIN: 'placeholder',
           },
         },
       }),

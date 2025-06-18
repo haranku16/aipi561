@@ -36,14 +36,3 @@ export interface PhotoListResponse {
   photos: PhotoMetadata[];
   nextToken?: string; // For pagination
 }
-
-export interface PhotoSearchRequest {
-  query: string;
-  pageSize?: number;
-  nextToken?: string;
-}
-
-export interface PhotoSearchResponse {
-  results: Array<PhotoMetadata & { score: number }>;
-  nextToken?: string;
-}
