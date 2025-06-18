@@ -16,11 +16,6 @@ export interface PhotoListResponse {
   nextToken?: string;
 }
 
-export interface PhotoSearchResponse {
-  results: Array<PhotoMetadata & { score: number }>;
-  nextToken?: string;
-}
-
 export interface PhotoStatusResponse {
   photoId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -91,19 +86,6 @@ export async function listPhotos(pageSize: number = 20, nextToken?: string): Pro
   }
 
   const response = await apiCall(`/?${params.toString()}`);
-  return response.json();
-}
-
-// Search photos
-export async function searchPhotos(query: string, pageSize: number = 20, nextToken?: string): Promise<PhotoSearchResponse> {
-  const params = new URLSearchParams();
-  params.append('query', query);
-  params.append('pageSize', pageSize.toString());
-  if (nextToken) {
-    params.append('nextToken', nextToken);
-  }
-
-  const response = await apiCall(`/search?${params.toString()}`);
   return response.json();
 }
 

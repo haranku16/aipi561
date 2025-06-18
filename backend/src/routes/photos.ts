@@ -2,11 +2,9 @@ import { Router } from "https://deno.land/x/oak@v12.6.1/mod.ts";
 import { 
   PhotoUploadResponse, 
   PhotoListResponse, 
-  PhotoSearchRequest, 
-  PhotoSearchResponse,
   ErrorResponse
 } from "../types/index.ts";
-import { generatePresignedUrl, listPhotos, searchPhotos, uploadImage, getPhoto, getPhotoByLookupKey, deletePhoto } from "../services/photos.ts";
+import { generatePresignedUrl, listPhotos, uploadImage, getPhoto, getPhotoByLookupKey, deletePhoto } from "../services/photos.ts";
 import { requireAuth } from "../middleware/auth-helpers.ts";
 import { s3Client } from "../config/index.ts";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
@@ -133,44 +131,6 @@ router.get("/", async (ctx) => {
     } else {
       ctx.response.status = 500;
       ctx.response.body = { error: "Failed to list photos" } as ErrorResponse;
-    }
-  }
-});
-
-// Search photos
-router.get("/search", async (ctx) => {
-  try {
-    const user = requireAuth(ctx);
-    const query = ctx.request.url.searchParams.get("query");
-    if (!query) {
-      ctx.response.status = 400;
-      ctx.response.body = { error: "Search query is required" } as ErrorResponse;
-      return;
-    }
-
-    const nextToken = ctx.request.url.searchParams.get("nextToken") || undefined;
-    const pageSize = parseInt(ctx.request.url.searchParams.get("pageSize") || "20");
-
-    const searchRequest: PhotoSearchRequest = {
-      query,
-      pageSize,
-      nextToken
-    };
-
-    const response: PhotoSearchResponse = await searchPhotos(
-      user.email,
-      searchRequest
-    );
-
-    ctx.response.body = response;
-  } catch (error) {
-    console.error("Search error:", error);
-    if (error instanceof Error && error.message === "Authentication required") {
-      ctx.response.status = 401;
-      ctx.response.body = { error: "Authentication required" } as ErrorResponse;
-    } else {
-      ctx.response.status = 500;
-      ctx.response.body = { error: "Failed to search photos" } as ErrorResponse;
     }
   }
 });
