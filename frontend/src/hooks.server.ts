@@ -27,6 +27,12 @@ export const handle: Handle = async ({ event, resolve }) => {
       body
     });
 
+    // Handle 204 No Content responses
+    if (backendResponse.status === 204) {
+      return new Response(null, { status: 204 });
+    }
+
+    // For other responses, parse JSON
     const data = await backendResponse.json();
     return json(data);
   }

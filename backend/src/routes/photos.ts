@@ -7,7 +7,7 @@ import {
   ErrorResponse,
   PhotoMetadata 
 } from "../types/index.ts";
-import { generatePresignedUrl, listPhotos, searchPhotos, uploadImage, getPhoto, getPhotoByLookupKey } from "../services/photos.ts";
+import { generatePresignedUrl, listPhotos, searchPhotos, uploadImage, getPhoto, getPhotoByLookupKey, deletePhoto } from "../services/photos.ts";
 import { requireAuth } from "../middleware/auth-helpers.ts";
 
 const router = new Router({ prefix: "/api/photos" });
@@ -261,6 +261,39 @@ router.get("/:lookupKey/status", async (ctx) => {
     } else {
       ctx.response.status = 500;
       ctx.response.body = { error: "Failed to get photo status" } as ErrorResponse;
+    }
+  }
+});
+
+// Delete a photo by lookupKey
+router.delete("/:lookupKey", async (ctx) => {
+  try {
+    const user = requireAuth(ctx);
+    const lookupKey = ctx.params.lookupKey;
+    
+    if (!lookupKey) {
+      ctx.response.status = 400;
+      ctx.response.body = { error: "Lookup key is required" } as ErrorResponse;
+      return;
+    }
+
+    const success = await deletePhoto(user.email, lookupKey);
+    
+    if (!success) {
+      ctx.response.status = 404;
+      ctx.response.body = { error: "Photo not found or could not be deleted" } as ErrorResponse;
+      return;
+    }
+    
+    ctx.response.status = 204; // No content
+  } catch (error) {
+    console.error("Delete photo error:", error);
+    if (error instanceof Error && error.message === "Authentication required") {
+      ctx.response.status = 401;
+      ctx.response.body = { error: "Authentication required" } as ErrorResponse;
+    } else {
+      ctx.response.status = 500;
+      ctx.response.body = { error: "Failed to delete photo" } as ErrorResponse;
     }
   }
 });
