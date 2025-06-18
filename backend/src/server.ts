@@ -4,7 +4,7 @@ import authRouter from "./routes/auth.ts";
 import photosRouter from "./routes/photos.ts";
 import healthRouter from "./routes/health.ts";
 import { PORT, testAWSCredentials } from "./config/index.ts";
-import { setupQueueListener } from "./services/queue-processor.ts";
+import { ServiceFactory } from "./config/service-factory.ts";
 
 // Create and configure application
 const app = new Application();
@@ -28,8 +28,9 @@ try {
   // Don't throw here - let the server start and see if it works anyway
 }
 
-// Initialize queue listener for background processing
-await setupQueueListener();
+// Initialize services and queue listener for background processing
+const { queueProcessor } = ServiceFactory.createServices();
+await queueProcessor.setupQueueListener();
 
 // Start server
 console.log(`Server running on port ${PORT}`);

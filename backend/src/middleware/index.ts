@@ -1,5 +1,5 @@
 import { Context, Next } from "https://deno.land/x/oak@v12.6.1/mod.ts";
-import { verifyGoogleToken } from "../services/auth.ts";
+import { ServiceFactory } from "../config/service-factory.ts";
 import { UserInfo } from "../types/index.ts";
 
 // Create a custom context type that includes user data
@@ -37,8 +37,11 @@ export async function authMiddleware(ctx: AuthenticatedContext, next: Next) {
     const token = authHeader.substring(7); // Remove "Bearer " prefix
     
     try {
+      // Get services from factory
+      const { authService } = ServiceFactory.createServices();
+      
       // Verify the token and get user info
-      const userInfo = await verifyGoogleToken(token);
+      const userInfo = await authService.verifyGoogleToken(token);
       ctx.state.user = userInfo;
     } catch (error) {
       console.error("Authentication error:", error);

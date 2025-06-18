@@ -6,6 +6,13 @@
 # Deno
 .deno/
 
+# Coverage reports
+coverage/
+cov/
+cov-html/
+cov.lcov
+coverage_summary.txt
+
 # TypeScript / Node.js
 node_modules/
 dist/
