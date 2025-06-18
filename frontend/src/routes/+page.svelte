@@ -8,7 +8,8 @@
     getPhotoStatus,
     validateImageFile,
     deletePhoto,
-    type PhotoMetadata
+    type PhotoMetadata,
+    type PhotoStatusResponse
   } from '$lib/api/photos';
 
   export let data: any;
@@ -62,18 +63,39 @@
     pollInterval = setInterval(async () => {
       const processing = photos.filter(p => p.status === 'pending' || p.status === 'processing');
       if (processing.length === 0) return;
+      
       for (const photo of processing) {
         if (photo.lookupKey) {
           try {
             const status = await getPhotoStatus(photo.lookupKey);
             if (status.status !== photo.status || status.title !== photo.title || status.description !== photo.description) {
-              await fetchPhotos();
-              break;
+              // Update the individual photo instead of refreshing all
+              updatePhotoMetadata(photo.photoId, status);
             }
           } catch {}
         }
       }
     }, 4000);
+  }
+
+  // Update individual photo metadata without re-rendering the entire grid
+  function updatePhotoMetadata(photoId: string, status: PhotoStatusResponse) {
+    const photoIndex = photos.findIndex(p => p.photoId === photoId);
+    if (photoIndex !== -1) {
+      // Create a new array to trigger reactivity, but only update the specific photo
+      photos = photos.map((photo, index) => {
+        if (index === photoIndex) {
+          return {
+            ...photo,
+            status: status.status,
+            title: status.title,
+            description: status.description,
+            processingError: status.processingError
+          };
+        }
+        return photo;
+      });
+    }
   }
 
   // Computed filtered photos
