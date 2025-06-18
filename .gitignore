@@ -6,6 +6,9 @@
 # Deno
 .deno/
 
+# Coverage reports
+coverage/
+
 # TypeScript / Node.js
 node_modules/
 dist/

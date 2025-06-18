@@ -66,7 +66,8 @@ export class PhotosService implements IPhotosService {
     private config: EnvironmentConfig,
     private dynamoClient: IDynamoDBClient,
     private s3Client: IS3Client,
-    private queueProcessor: IQueueProcessor
+    private queueProcessor: IQueueProcessor,
+    private getSignedUrlFn: typeof getSignedUrl = getSignedUrl
   ) {}
 
   // Generate a unique photo ID
@@ -124,7 +125,7 @@ export class PhotosService implements IPhotosService {
     };
 
     const command = new PutObjectCommand(putObjectInput);
-    const uploadUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+    const uploadUrl = await this.getSignedUrlFn(this.s3Client, command, { expiresIn: 3600 });
 
     return { photoId, uploadUrl };
   }
@@ -169,23 +170,20 @@ export class PhotosService implements IPhotosService {
     };
   }
 
-  // Get a single photo by photoId and userId
+  // Get a single photo by photoId
   async getPhoto(
     photoId: string,
     userId: string
   ): Promise<PhotoMetadata | null> {
-    // Since we don't have a direct way to query by photoId, we'll need to scan
-    // This is not ideal for large datasets, but for now it works
-    // In a production environment, you might want to add a secondary index for photoId lookups
-    // or use a different key structure if photoId lookups are frequent
-    
+    // Query for the photo using GSI
     const queryInput: QueryCommandInput = {
       TableName: this.config.dynamodbTable,
-      KeyConditionExpression: "PK = :pk",
-      FilterExpression: "photoId = :photoId",
+      IndexName: "PhotoIdIndex",
+      KeyConditionExpression: "photoId = :photoId",
+      FilterExpression: "userId = :userId",
       ExpressionAttributeValues: {
-        ":pk": { S: `USER#${userId}` },
-        ":photoId": { S: photoId }
+        ":photoId": { S: photoId },
+        ":userId": { S: userId }
       }
     };
 
@@ -301,7 +299,7 @@ export class PhotosService implements IPhotosService {
     };
 
     const getCommand = new GetObjectCommand(getObjectInput);
-    const presignedUrl = await getSignedUrl(this.s3Client, getCommand, { expiresIn: 3600 });
+    const presignedUrl = await this.getSignedUrlFn(this.s3Client, getCommand, { expiresIn: 3600 });
 
     return { photoMetadata, presignedUrl };
   }

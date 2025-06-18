@@ -3,6 +3,7 @@ import { createAWSClients } from "./aws-clients.ts";
 import { AuthService, IAuthService } from "../services/auth.ts";
 import { PhotosService, IPhotosService } from "../services/photos.ts";
 import { QueueProcessor, IQueueProcessor } from "../services/queue-processor.ts";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export interface ServiceContainer {
   authService: IAuthService;
@@ -23,7 +24,7 @@ export class ServiceFactory {
 
     const authService = new AuthService(envConfig);
     const queueProcessor = new QueueProcessor(envConfig, dynamoClient, s3Client);
-    const photosService = new PhotosService(envConfig, dynamoClient, s3Client, queueProcessor);
+    const photosService = new PhotosService(envConfig, dynamoClient, s3Client, queueProcessor, getSignedUrl);
 
     this.instance = {
       authService,
