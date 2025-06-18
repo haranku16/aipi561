@@ -59,6 +59,7 @@ export class AppRunnerStack extends cdk.Stack {
           environmentVariables: {
             NODE_ENV: 'production',
             GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID!,
+            OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
             S3_BUCKET: props.imageBucket.bucketName,
             DYNAMODB_TABLE: props.dynamoTable.tableName,
             OPENSEARCH_DOMAIN: 'placeholder',
