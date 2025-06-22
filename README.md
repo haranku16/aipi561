@@ -317,7 +317,7 @@ npm run test
 ### Big O Complexity Analysis
 
 - **Photo Upload**: O(1) - Direct S3 upload with DynamoDB write
-- **Photo Listing**: O(log n) - DynamoDB query with pagination
+- **Photo Listing**: O(1) - DynamoDB query with pagination
 - **Photo Retrieval**: O(1) - Direct DynamoDB lookup by sort key
 - **AI Processing**: O(1) - Async queue processing with OpenAI API
 - **Authentication**: O(1) - Google OAuth token validation
